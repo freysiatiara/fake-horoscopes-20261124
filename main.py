@@ -45,6 +45,16 @@ def main() -> None:
         fh.write(text)
     os.chmod(path, 0o644)
 
+    # Verify what was actually written: re-read the file and confirm
+    # it holds exactly the intended text at the intended mode, so a
+    # partial write or a stray newline can never slip past silently.
+    with open(path, "rb") as fh:
+        written = fh.read()
+    if written != text.encode("utf-8"):
+        raise SystemExit("entry.txt content does not match the entry text")
+    if os.stat(path).st_mode & 0o777 != 0o644:
+        raise SystemExit("entry.txt mode is not 0644")
+
 
 if __name__ == "__main__":
     main()
